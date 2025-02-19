@@ -31,6 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'accounts.User'
 
 # Application definition
 
@@ -47,6 +48,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
 
+    # Custom apps
+    'apps.accounts',
 
 ]
 
@@ -59,6 +62,7 @@ EMAIL_HOST_USER = os.getenv('PY_INTERACT_EMAIL')
 EMAIL_HOST_PASSWORD = os.getenv('PY_INTERACT_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
+FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 
@@ -184,7 +188,7 @@ LOGGING = {
 
     'formatters': {
         'default': {
-            'format': '{levelname} \nTime: {asctime} \nModule: {module} \nUser: {user} \nMessage: {message}',
+            'format': '{levelname} \nTime: {asctime} \nModule: {module} \nMessage: {message}',
             'style': '{',
         },
     },
@@ -215,11 +219,11 @@ LOGGING = {
         #     "level": "DEBUG",
         #     "propagate": True,
         # },
-        # "accounts": {
-        #     "handlers": ["applogs", "console"],
-        #     "level": "DEBUG",
-        #     "propagate": False,
-        # },
+        "accounts": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
         # "sandbox": {
         #     "handlers": ["applogs", "console"],
         #     "level": "DEBUG", 

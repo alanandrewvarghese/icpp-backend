@@ -87,5 +87,7 @@ local_settings.py
 
 .venv/
 logs/
+api_docs/
 .env
 db.sqlite3
+codebase.txt

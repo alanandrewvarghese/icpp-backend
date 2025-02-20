@@ -19,9 +19,12 @@ from .utils import (
     confirm_password_reset,
 )
 
-from .serializers import (
+from apps.common.serializers import (
     SuccessResponseSerializer,
     ErrorResponseSerializer,
+)
+
+from .serializers import (
     LoginRequestSerializer,
     LoginResponseSerializer,
     ReadOnlyUserSerializer,

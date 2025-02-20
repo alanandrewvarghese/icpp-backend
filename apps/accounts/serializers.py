@@ -86,17 +86,3 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_new_password']:
             raise serializers.ValidationError("New passwords do not match.")
         return data
-
-
-class SuccessResponseSerializer(serializers.Serializer):
-    """
-    Generic serializer for success responses with a message.
-    """
-    message = serializers.CharField()
-
-
-class ErrorResponseSerializer(serializers.Serializer):
-    """
-    Generic serializer for error responses with an error message.
-    """
-    error = serializers.CharField()

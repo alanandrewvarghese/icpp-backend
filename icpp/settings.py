@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # Custom apps
+    'apps.common',
     'apps.accounts',
+    'apps.lessons',
 
 ]
 
@@ -220,6 +222,11 @@ LOGGING = {
         #     "propagate": True,
         # },
         "accounts": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "lessons": {
             "handlers": ["applogs", "console"],
             "level": "DEBUG",
             "propagate": False,

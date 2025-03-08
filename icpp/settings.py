@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.common',
     'apps.accounts',
     'apps.lessons',
+    'apps.sandbox',
 
 ]
 
@@ -170,7 +171,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -231,10 +232,10 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
-        # "sandbox": {
-        #     "handlers": ["applogs", "console"],
-        #     "level": "DEBUG", 
-        #     "propagate": False,
-        # },
+        "sandbox": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
     },
 }

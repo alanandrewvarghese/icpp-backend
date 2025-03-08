@@ -20,9 +20,10 @@ class Exercise(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="exercises")
     title = models.CharField(max_length=255)
     description = models.TextField()
+    sandbox = models.CharField(max_length=50, default="piston")
     starter_code = models.TextField(blank=True, null=True)
     solution_code = models.TextField(blank=True, null=True)
-    test_cases = models.JSONField(default=list)  # Stores test cases as JSON
+    test_cases = models.JSONField(default=list)  # Stores test cases as JSON, Format: {"input": "input","expected_output": "expected output"}
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_exercises", null=True, blank=True) # Creator of the exercise

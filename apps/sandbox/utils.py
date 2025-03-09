@@ -4,30 +4,21 @@ import logging
 from .models import ExecutionResult  # Import ExecutionResult model
 
 logger = logging.getLogger("sandbox") # Get logger for sandbox app
-
 def create_execution_result(request, compile_output, compile_error, run_output, run_error, test_results=None):
     """
-    Creates and saves an ExecutionResult instance.
-
-    Args:
-        request (ExecutionRequest): The ExecutionRequest object.
-        compile_output (str): Output from compilation (if applicable).
-        compile_error (str): Error from compilation (if any).
-        run_output (str): Standard output from code execution.
-        run_error (str): Standard error from code execution (if any).
-        test_results (list, optional): List of test case results. Defaults to None.
-
+    ...
     Returns:
-        ExecutionResult: The created and saved ExecutionResult instance.
+        ExecutionResult: The created and saved ExecutionResult instance. # ADDED in description
     """
     output = run_output # Format run output
     error = compile_error or run_error  # Determine error message (compile or run error)
-    return ExecutionResult.objects.create(
+    execution_result = ExecutionResult.objects.create( # Capture the created object
         request=request,
         output=output,
         error=error,
         test_results=test_results
     )
+    return execution_result # Return the created object # ADDED line
 
 def execute_code_in_sandbox(api_url, payload):
     """

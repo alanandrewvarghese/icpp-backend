@@ -8,6 +8,7 @@ class ExecutionRequestSerializer(serializers.ModelSerializer):
     status = serializers.CharField(read_only=True) # Status should be set server-side, read-only
     stdin = serializers.CharField(required=False, allow_blank=True, default='')
     args = serializers.CharField(required=False, allow_blank=True, default='')
+    code = serializers.CharField(required=True, error_messages={"required": "Code field is required for execution."})
 
     class Meta:
         model = ExecutionRequest

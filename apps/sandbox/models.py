@@ -24,7 +24,7 @@ class ExecutionRequest(models.Model):
 class ExecutionResult(models.Model):
     """Stores the result of an execution request."""
     request = models.OneToOneField(ExecutionRequest, on_delete=models.CASCADE) # One-to-one link to the execution request
-    output = models.TextField() # Stores the standard output of the code execution
+    output = models.TextField(blank=True, null=True) # Stores the standard output of the code execution
     error = models.TextField(blank=True, null=True) # Stores any errors during execution
     execution_time = models.FloatField(null=True, blank=True) # Stores the execution time, if available
     test_results = models.JSONField(default=list, blank=True, null=True) # Format: {"test_case": {"input": "input1", "expected_output": "output1"}, "actual_output": "actual output from the code", "passed": true/false}

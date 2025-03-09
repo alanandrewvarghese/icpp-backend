@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.lessons',
     'apps.sandbox',
+    'apps.progress',
 
 ]
 
@@ -66,6 +67,7 @@ EMAIL_HOST_PASSWORD = os.getenv('PY_INTERACT_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 FRONTEND_URL = os.getenv('FRONTEND_URL')
+BASE_URL = os.getenv('BASE_URL')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware', 
@@ -233,6 +235,11 @@ LOGGING = {
             "propagate": False,
         },
         "sandbox": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+            "progress": {
             "handlers": ["applogs", "console"],
             "level": "DEBUG",
             "propagate": False,

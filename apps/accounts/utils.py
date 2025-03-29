@@ -11,6 +11,49 @@ import logging
 logger = logging.getLogger("accounts")
 User = get_user_model()
 
+def instructor_approval_success_mail(user):
+    """
+    Utility function to send an approval notification email to an instructor.
+
+    Args:
+        user: The User object (instructor) to send the approval notification to.
+
+    Returns:
+        bool: True if the email was sent successfully, False otherwise.
+    """
+    try:
+        mail_subject = 'Instructor Account Approved'
+        login_url = f"{settings.FRONTEND_URL}/login"
+
+        message = f"""
+        <html>
+        <head>
+            <title>Account Approved</title>
+        </head>
+        <body>
+            <h3>Your ICPP Instructor Account Has Been Approved</h3>
+            <p>Hi {user.username},</p>
+            <p>Congratulations! Your instructor account has been approved.</p>
+            <p>You can now log in to the platform and start creating lessons and exercises.</p>
+            <p><a href="{login_url}">Click here to log in</a></p>
+            <p>Thank you for joining our teaching team!</p>
+        </body>
+        </html>
+        """
+
+        send_mail(
+            mail_subject,
+            f"Your instructor account has been approved. You can now log in to {login_url}",
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            html_message=message,
+            fail_silently=False,
+        )
+        logger.info(f"Instructor approval notification email sent to: {user.email}")
+        return True
+    except Exception as e:
+        logger.exception(f"Error sending instructor approval email to {user.email}: {e}")
+        return False
 
 def send_password_reset_email(request, user):
     """

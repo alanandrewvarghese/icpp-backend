@@ -9,7 +9,7 @@ class ReadOnlyUserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role')
+        fields = ('id', 'username', 'email', 'role', 'registration_date','is_active')
         read_only_fields = fields
 
 
@@ -86,3 +86,32 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_new_password']:
             raise serializers.ValidationError("New passwords do not match.")
         return data
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing User model in admin user management.
+    Includes fields suitable for a user list view.
+    """
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'role', 'registration_date', 'is_active')
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating User model by administrators.
+    Allows updating specific fields like role and is_active.
+    """
+    class Meta:
+        model = User
+        fields = ('email','is_active','role',)
+
+class InstructorApprovalSerializer(serializers.ModelSerializer):
+    """
+    Serializer for approving instructor accounts by administrators.
+    Allows updating is_active status to True.
+    """
+    class Meta:
+        model = User
+        fields = ('is_active',)

@@ -3,8 +3,8 @@ from django.db import models
 
 class User(AbstractUser):
     ROLES = (
-        ('student', 'Student'), 
-        ('instructor', 'Instructor'), 
+        ('student', 'Student'),
+        ('instructor', 'Instructor'),
         ('admin', 'Admin')
     )
     role = models.CharField(max_length=20, choices=ROLES, default='student')

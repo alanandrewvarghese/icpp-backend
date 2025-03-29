@@ -30,6 +30,7 @@ def send_password_reset_email(request, user):
         reset_url = reverse('auth-password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
         absolute_reset_url = request.build_absolute_uri(reset_url)
         frontend_reset_url = f"{settings.FRONTEND_URL}/reset-password/{uidb64}/{token}/"
+        print(frontend_reset_url)
 
         # Send password reset email
         mail_subject = 'Password Reset Request'
@@ -116,7 +117,7 @@ def create_superuser_admin_account(username, email, password, role='admin'):
     except Exception as e:
         logger.error(f"Error at create_superuser_admin_account: {e}")
         return None
-    
+
 def create_instructor_account(username, email, password):
     """
     Creates an instructor account with the role of 'instructor' and normal user privileges.

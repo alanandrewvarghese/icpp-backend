@@ -3,6 +3,7 @@ import logging
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .models import Lesson, Exercise
+from django.db.models import Max
 from .serializers import (
     LessonCreateSerializer,
     LessonSerializer,
@@ -123,3 +124,21 @@ def lesson_exercises_list(request, lesson_id):
     exercises = lesson.exercises.all()
     serializer = ExerciseListSerializer(exercises, many=True) # Serialize multiple exercises
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def lesson_max_order(request):
+    """
+    Returns the maximum order value from existing lessons.
+    If no lessons exist, returns 0.
+    """
+    try:
+        max_order = Lesson.objects.all().aggregate(Max('order'))['order__max']
+        result = max_order or 0  # Use 0 if max_order is None (no lessons exist)
+        return Response({"max_order": result}, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Error retrieving maximum lesson order: {e}")
+        return Response(
+            {"error": "Failed to retrieve max order"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

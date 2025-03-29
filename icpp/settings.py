@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -70,7 +70,7 @@ FRONTEND_URL = os.getenv('FRONTEND_URL')
 BASE_URL = os.getenv('BASE_URL')
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware', 
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -158,7 +158,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  
+#     "http://localhost:3000",
 # ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -217,7 +217,7 @@ LOGGING = {
             "formatter": "default",
         },
     },
-    
+
     "loggers": {
         # "django": {
         #     "handlers": ["file"],

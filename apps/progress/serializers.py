@@ -1,25 +1,37 @@
 from rest_framework import serializers
-from .models import LessonProgress, ExerciseSubmission # Import the models we created
+from .models import LessonProgress, ExerciseSubmission
 from apps.lessons.models import Exercise
 
 class LessonProgressSerializer(serializers.ModelSerializer):
     """Serializer for LessonProgress model."""
-    user = serializers.PrimaryKeyRelatedField(read_only=True) # Display user ID, make it read-only
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
-        model = LessonProgress # Tell serializer which model to use
-        fields = '__all__' # Include all fields from the LessonProgress model
-        read_only_fields = ('completed_at',) # 'completed_at' is automatically set, so it's read-only for updates
+        model = LessonProgress
+        fields = '__all__'
+        read_only_fields = ('completed_at',)
 
 
 class ExerciseSubmissionSerializer(serializers.ModelSerializer):
     """Serializer for ExerciseSubmission model."""
-    user = serializers.PrimaryKeyRelatedField(read_only=True) # Make user read-only
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
     exercise = serializers.PrimaryKeyRelatedField(queryset = Exercise.objects.all())
-    execution_result = serializers.PrimaryKeyRelatedField(queryset = 'apps.sandbox.models.ExecutionResult', allow_null=True, required=False) # Optional execution result
+    execution_result = serializers.PrimaryKeyRelatedField(queryset = 'apps.sandbox.models.ExecutionResult', allow_null=True, required=False)
     submitted_code = serializers.CharField(required=True)
 
     class Meta:
-        model = ExerciseSubmission # Tell serializer which model to use
-        fields = '__all__' # Include all fields
-        read_only_fields = ('submitted_at', 'is_correct') # These fields are set automatically or determined by backend
+        model = ExerciseSubmission
+        fields = '__all__'
+        read_only_fields = ('submitted_at', 'is_correct')
+
+
+class LessonProgressPercentageSerializer(serializers.Serializer):
+    """
+    Serializer for lesson progress percentage data.
+    """
+    lesson_id = serializers.IntegerField()
+    lesson_title = serializers.CharField()
+    progress_percentage = serializers.FloatField()
+    completed_exercises = serializers.IntegerField()
+    total_exercises = serializers.IntegerField()
+    is_completed = serializers.BooleanField()

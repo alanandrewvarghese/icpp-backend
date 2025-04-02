@@ -1,12 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from .serializers import LessonProgressSerializer, ExerciseSubmissionSerializer
+from .serializers import LessonProgressSerializer, ExerciseSubmissionSerializer, LessonProgressPercentageSerializer
 from .models import LessonProgress, ExerciseSubmission
-from apps.lessons.models import Lesson, Exercise  # Import Lesson and Exercise models
-from apps.sandbox.api_views import ExecutionRequestAPIView # To trigger code execution
-from apps.sandbox.models import ExecutionResult # To trigger code execution
-from apps.sandbox.serializers import ExecutionRequestSerializer, ExecutionResultSerializer # Serializers for sandbox
+from apps.lessons.models import Lesson, Exercise
+from apps.sandbox.api_views import ExecutionRequestAPIView
+from apps.sandbox.models import ExecutionResult
+from apps.sandbox.serializers import ExecutionRequestSerializer, ExecutionResultSerializer
 from rest_framework.test import APIRequestFactory, force_authenticate
 from django.test import RequestFactory
 from rest_framework.test import force_authenticate
@@ -21,16 +21,16 @@ class RecordLessonCompletionAPIView(APIView):
     """
     API view to record when a user completes a lesson.
     """
-    permission_classes = [permissions.IsAuthenticated] # Only logged-in users can record progress
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, lesson_id):
         try:
-            lesson = Lesson.objects.get(pk=lesson_id) # Check if lesson exists
+            lesson = Lesson.objects.get(pk=lesson_id)
         except Lesson.DoesNotExist:
             logger.warning(f"RecordLessonCompletionAPIView: Lesson with ID '{lesson_id}' not found.")
             return Response({"error": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        user = request.user # Get the current logged-in user
+        user = request.user
 
         # Check if progress already recorded to avoid duplicates
         if LessonProgress.objects.filter(user=user, lesson=lesson).exists():
@@ -116,28 +116,28 @@ class ExerciseSubmissionAPIView(APIView):
         if isinstance(execution_response, dict):
             # Handle as dictionary response
             status_code = execution_response.get('status_code', 201)
-            
+
             # Check if the execution was successful (201 Created)
             if status_code == status.HTTP_201_CREATED:
                 execution_result_data = execution_response
                 logger.debug(f"ExecutionResultData: {execution_result_data}")
 
                 execution_result_serializer = ExecutionResultSerializer(data=execution_result_data)
-                
+
                 if execution_result_serializer.is_valid():
                     execution_result_id = execution_result_data.get('id')
                     if execution_result_id:
                         execution_result = ExecutionResult.objects.get(pk=execution_result_id)
-                        
+
                         submission.execution_result = execution_result
                         submission.save()
-                        
+
                         # --- Check Test Cases and Update is_correct ---
                         test_results = execution_result.test_results or []
                         all_tests_passed = all(result.get('passed', False) for result in test_results)
                         submission.is_correct = all_tests_passed
                         submission.save()
-                        
+
                         logger.info(f"Exercise submission processed for user '{request.user.username}', exercise '{exercise.title}'. Submission ID: {submission.id}, Execution Result ID: {execution_result.id}, Tests Passed: {all_tests_passed}")
                         initial_serializer = ExerciseSubmissionSerializer(submission)
                         response_data = initial_serializer.data
@@ -165,16 +165,16 @@ class ExerciseSubmissionAPIView(APIView):
                     execution_result_id = execution_response.data.get('id')
                     if execution_result_id:
                         execution_result = ExecutionResult.objects.get(pk=execution_result_id)
-                        
+
                         submission.execution_result = execution_result
                         submission.save()
-                        
+
                         # --- Check Test Cases and Update is_correct ---
                         test_results = execution_result.test_results or []
                         all_tests_passed = all(result.get('passed', False) for result in test_results)
                         submission.is_correct = all_tests_passed
                         submission.save()
-                        
+
                         logger.info(f"Exercise submission processed for user '{request.user.username}', exercise '{exercise.title}'. Submission ID: {submission.id}, Execution Result ID: {execution_result.id}, Tests Passed: {all_tests_passed}")
                         initial_serializer = ExerciseSubmissionSerializer(submission)
                         response_data = initial_serializer.data
@@ -193,3 +193,57 @@ class ExerciseSubmissionAPIView(APIView):
                 logger.error(f"Execution request failed for submission ID {submission.id}. Sandbox response status: {execution_response.status_code}, data: {execution_response.data}")
                 submission.delete()
                 return Response({"error": "Code execution failed.", "details": execution_response.data}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class LessonProgressPercentageAPIView(APIView):
+    """
+    API view to retrieve the percentage of exercises completed for a lesson.
+    Returns the progress as a percentage and detailed stats about completed exercises.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, lesson_id):
+        try:
+            lesson = Lesson.objects.get(pk=lesson_id)
+        except Lesson.DoesNotExist:
+            logger.warning(f"LessonProgressPercentageAPIView: Lesson with ID '{lesson_id}' not found.")
+            return Response({"error": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user = request.user
+
+        total_exercises = Exercise.objects.filter(lesson=lesson).count()
+
+        if total_exercises == 0:
+            data = {
+                "lesson_id": lesson_id,
+                "lesson_title": lesson.title,
+                "progress_percentage": 0,
+                "completed_exercises": 0,
+                "total_exercises": 0,
+                "is_completed": False
+            }
+            serializer = LessonProgressPercentageSerializer(data)
+            logger.info(f"No exercises found for lesson '{lesson.title}'.")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        completed_exercises = ExerciseSubmission.objects.filter(
+            user=user,
+            exercise__lesson=lesson,
+            is_correct=True
+        ).values('exercise').distinct().count()
+
+        progress_percentage = (completed_exercises / total_exercises) * 100
+
+        lesson_completed = LessonProgress.objects.filter(user=user, lesson=lesson).exists()
+
+        progress_data = {
+            "lesson_id": lesson_id,
+            "lesson_title": lesson.title,
+            "progress_percentage": round(progress_percentage, 2),
+            "completed_exercises": completed_exercises,
+            "total_exercises": total_exercises,
+            "is_completed": lesson_completed
+        }
+
+        serializer = LessonProgressPercentageSerializer(progress_data)
+        logger.info(f"Calculated progress for user '{user.username}' on lesson '{lesson.title}': {progress_percentage:.2f}%")
+        return Response(serializer.data, status=status.HTTP_200_OK)

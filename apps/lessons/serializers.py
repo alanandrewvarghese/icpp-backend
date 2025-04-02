@@ -48,13 +48,17 @@ class ExerciseListSerializer(serializers.ModelSerializer):
     """Serializer for listing Exercise model - can customize fields for list view."""
 
     author_name = serializers.SerializerMethodField()
+    lesson_title = serializers.SerializerMethodField()
 
     class Meta:
         model = Exercise
-        fields = ('id', 'title', 'lesson','description','author_name') # Example: Just title and lesson for list view
+        fields = ('id', 'title', 'lesson','description','author_name','lesson_title')
 
     def get_author_name(self, obj):
       return obj.created_by.username if obj.created_by else None
+
+    def get_lesson_title(self, obj):
+      return obj.lesson.title if obj.lesson else None
 
 
 class LessonCreateSerializer(serializers.ModelSerializer):

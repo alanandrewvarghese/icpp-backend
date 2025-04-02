@@ -31,7 +31,7 @@ def instructor_approval_success_mail(user):
             <title>Account Approved</title>
         </head>
         <body>
-            <h3>Your ICPP Instructor Account Has Been Approved</h3>
+            <h3>Your PyInteract Instructor Account Has Been Approved</h3>
             <p>Hi {user.username},</p>
             <p>Congratulations! Your instructor account has been approved.</p>
             <p>You can now log in to the platform and start creating lessons and exercises.</p>

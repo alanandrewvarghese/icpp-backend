@@ -12,6 +12,8 @@ from django.test import RequestFactory
 from rest_framework.test import force_authenticate
 from rest_framework.request import Request
 from .utils import send_execution_request
+from apps.badges.utils import award_badge_to_user
+from apps.badges.models import Badge, UserBadge
 import logging
 
 logger = logging.getLogger("progress")
@@ -19,7 +21,7 @@ logger = logging.getLogger("progress")
 
 class RecordLessonCompletionAPIView(APIView):
     """
-    API view to record when a user completes a lesson.
+    API view to record when a user completes a lesson and award badges.
     """
     permission_classes = [permissions.IsAuthenticated]
 
@@ -38,21 +40,33 @@ class RecordLessonCompletionAPIView(APIView):
             return Response({"message": "Lesson progress already recorded."}, status=status.HTTP_200_OK)
 
         # Check if the user has completed at least 3 unique exercises for the lesson
-        completed_exercises_count = ExerciseSubmission.objects.filter(user=user, exercise__lesson=lesson, is_correct=True).values('exercise').distinct().count()
+        completed_exercises_count = ExerciseSubmission.objects.filter(
+            user=user,
+            exercise__lesson=lesson,
+            is_correct=True
+        ).values('exercise').distinct().count()
+
         if completed_exercises_count < 3:
             logger.info(f"User '{user.username}' has not completed enough exercises for lesson '{lesson.title}'.")
             return Response({"message": "Complete 3 exercises before proceeding."}, status=status.HTTP_200_OK)
 
-        progress_data = {'user': user.id, 'lesson': lesson.id} # Data to serialize
-        serializer = LessonProgressSerializer(data=progress_data) # Create serializer instance
+        progress_data = {'user': user.id, 'lesson': lesson.id}
+        serializer = LessonProgressSerializer(data=progress_data)
 
-        if serializer.is_valid(): # Validate data
-            serializer.save(user=user, lesson=lesson) # Save the progress record
+        if serializer.is_valid():
+            # Save the lesson progress record
+            serializer.save(user=user, lesson=lesson)
             logger.info(f"Lesson progress recorded for user '{user.username}' and lesson '{lesson.title}'.")
-            return Response(serializer.data, status=status.HTTP_201_CREATED) # Return success response
+
+            # Return a success response without badge logic - signals will handle badges
+            return Response({
+                "message": "Lesson completed successfully!",
+                "lesson_id": lesson.id,
+                "lesson_title": lesson.title
+            }, status=status.HTTP_201_CREATED)
         else:
             logger.warning(f"RecordLessonCompletionAPIView: Invalid data for lesson completion by user '{user.username}'. Errors: {serializer.errors}")
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # Return error response
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ExerciseSubmissionAPIView(APIView):
     """

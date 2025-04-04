@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.lessons',
     'apps.sandbox',
     'apps.progress',
+    'apps.badges',
 
 ]
 
@@ -239,7 +240,12 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": False,
         },
-            "progress": {
+        "progress": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "badges": {
             "handlers": ["applogs", "console"],
             "level": "DEBUG",
             "propagate": False,

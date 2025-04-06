@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'apps.sandbox',
     'apps.progress',
     'apps.badges',
-
+    'apps.analytics',
 ]
 
 # Email Settings
@@ -246,6 +246,11 @@ LOGGING = {
             "propagate": False,
         },
         "badges": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "analytics": {
             "handlers": ["applogs", "console"],
             "level": "DEBUG",
             "propagate": False,

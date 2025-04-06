@@ -122,8 +122,8 @@ class ExerciseSubmissionAPIView(APIView):
             submission.delete()
             return Response({"error": "Authentication token missing."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # --- Send Execution Request ---
-        execution_response = send_execution_request(execution_request_data, token=jwt_token)
+        # --- Send Execution Request using the existing execution_request object ---
+        execution_response = send_execution_request(execution_request_data, token=jwt_token, execution_request_id=execution_request.id)
         logger.debug(f"ExecutionResponse: {execution_response}")
 
         # Check if execution_response is a dictionary (not a Response object)

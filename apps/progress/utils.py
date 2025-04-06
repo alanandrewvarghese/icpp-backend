@@ -1,51 +1,39 @@
 import requests
 import logging
 from django.conf import settings
+from rest_framework.test import APIRequestFactory
+from apps.sandbox.api_views import ExecutionRequestAPIView
 
 logger = logging.getLogger("progress")
 
-def send_execution_request(execution_request_data, token=None):
+def send_execution_request(execution_request_data, token=None, execution_request_id=None):
     """
-    Sends a request to the code execution sandbox with the provided data.
-    Uses JWT authentication instead of auth_token.
+    Send an execution request to the sandbox API.
+
+    Args:
+        execution_request_data (dict): The data for the execution request
+        token (str, optional): JWT token for authentication
+        execution_request_id (int, optional): ID of an existing ExecutionRequest object
+
+    Returns:
+        Response or dict: The response from the sandbox API
     """
-    execution_url = "http://127.0.0.1:8000/api/sandbox/execution-requests/"
+    factory = APIRequestFactory()
 
-    if not execution_url:
-        logger.error("Execution service URL is not configured in settings.")
-        return {"error": "Execution service URL is missing."}
+    # Create a copy of the execution_request_data to avoid modifying the original
+    data_copy = execution_request_data.copy()
 
-    headers = {
-        "Content-Type": "application/json",
-    }
+    # If an execution_request_id is provided, include it in the data before creating the request
+    if execution_request_id:
+        data_copy['existing_request_id'] = execution_request_id
+
+    # Create the request with the modified data
+    request = factory.post('/api/sandbox/execute/', data_copy)
 
     if token:
-        headers["Authorization"] = f"Bearer {token}"
-    
-    logger.debug(f"Sending execution request to {execution_url} with data: {execution_request_data} and headers: {headers}")
+        request.META['HTTP_AUTHORIZATION'] = f'Bearer {token}'
 
-    try:
-        response = requests.post(execution_url, json=execution_request_data, headers=headers)
-        
-        # Log response details for debugging
-        logger.debug(f"Received response: {response.status_code} - {response.text}")
+    view = ExecutionRequestAPIView.as_view()
+    response = view(request)
 
-        response.raise_for_status()  # Raises an exception for 4xx and 5xx responses
-
-        return response.json()
-
-    except requests.exceptions.HTTPError as http_err:
-        logger.error(f"HTTP error occurred: {http_err} - Response: {response.text}")
-        return {"error": "HTTP error during execution request.", "details": response.text}
-    
-    except requests.exceptions.ConnectionError as conn_err:
-        logger.error(f"Connection error occurred: {conn_err}")
-        return {"error": "Connection to execution service failed."}
-
-    except requests.exceptions.Timeout as timeout_err:
-        logger.error(f"Request timeout occurred: {timeout_err}")
-        return {"error": "Execution request timed out."}
-
-    except Exception as e:
-        logger.exception("Unexpected error during execution request.")
-        return {"error": "Unexpected error during execution request.", "details": str(e)}
+    return response.data if hasattr(response, 'data') else response

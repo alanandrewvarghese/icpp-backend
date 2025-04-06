@@ -108,7 +108,7 @@ WSGI_APPLICATION = 'icpp.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "icpp",
+        "NAME": "icpp-zero",
         "USER": "postgres",
         "PASSWORD": "root",
         "HOST": "127.0.0.1",

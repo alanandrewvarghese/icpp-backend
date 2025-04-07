@@ -42,7 +42,8 @@ class LessonAnalyticsAPIView(APIView):
         try:
             # Get basic counts
             total_lessons = Lesson.objects.count()
-            total_students = User.objects.filter(groups__name='Student').count()
+            # Fixed: Using role instead of groups
+            total_students = User.objects.filter(role='student').count()
             total_completions = LessonProgress.objects.count()
 
             # Calculate overall completion percentage
@@ -115,7 +116,8 @@ class ExerciseAnalyticsAPIView(APIView):
 
     def get(self, request):
         try:
-            # Get basic counts
+            # Get basic counts - Adding total_students consistent with role-based filtering
+            total_students = User.objects.filter(role='student').count()
             total_submissions = ExerciseSubmission.objects.count()
             correct_submissions = ExerciseSubmission.objects.filter(is_correct=True).count()
             incorrect_submissions = total_submissions - correct_submissions
@@ -173,7 +175,8 @@ class ExerciseAnalyticsAPIView(APIView):
                     'total_submissions': total_submissions,
                     'correct_submissions': correct_submissions,
                     'incorrect_submissions': incorrect_submissions,
-                    'success_rate': round(success_rate, 2)
+                    'success_rate': round(success_rate, 2),
+                    'total_students': total_students  # Added for consistency
                 },
                 'most_attempted_exercises': most_attempted,
                 'challenging_exercises': challenging_exercises,
@@ -222,12 +225,19 @@ class SandboxAnalyticsAPIView(APIView):
             failed_executions = ExecutionRequest.objects.filter(status='failed').count()
             success_rate = (successful_executions / total_executions) * 100 if total_executions > 0 else 0
 
-            # Calculate average execution time if available (assuming results have a duration field)
+            # Calculate average execution time if available - Fixed to safely check for field existence
             avg_execution_time = None
-            if hasattr(ExecutionResult, 'execution_time'):
-                avg_execution_time = ExecutionResult.objects.aggregate(
-                    avg_time=Avg('execution_time')
-                )['avg_time']
+            try:
+                # Check if the field exists in the model, not just as a property
+                if ExecutionResult.objects.exists() and hasattr(ExecutionResult, 'execution_time'):
+                    # Check if it's a database field, not just an attribute
+                    if 'execution_time' in [f.name for f in ExecutionResult._meta.get_fields()]:
+                        avg_execution_time = ExecutionResult.objects.aggregate(
+                            avg_time=Avg('execution_time')
+                        )['avg_time']
+            except Exception as field_error:
+                logger.warning(f"Error accessing execution_time field: {str(field_error)}")
+                # Continue without the average time
 
             # Get trend data for the last 30 days
             thirty_days_ago = datetime.now() - timedelta(days=30)
@@ -251,16 +261,22 @@ class SandboxAnalyticsAPIView(APIView):
                 count=Count('id')
             ).order_by('-count')[:5]
 
-            # Get language distribution (assuming a language field exists)
+            # Get language distribution - Fixed to safely check field existence
             language_distribution = []
-            if hasattr(ExecutionRequest, 'language'):
-                language_distribution = ExecutionRequest.objects.values(
-                    language=F('language')
-                ).annotate(
-                    count=Count('id')
-                ).order_by('-count')
-            else:
-                # Placeholder for Python if language field doesn't exist
+            try:
+                # Check if language field exists on ExecutionRequest model
+                if 'language' in [f.name for f in ExecutionRequest._meta.get_fields()]:
+                    language_distribution = ExecutionRequest.objects.values(
+                        language=F('language')
+                    ).annotate(
+                        count=Count('id')
+                    ).order_by('-count')
+                else:
+                    # Placeholder for Python if language field doesn't exist
+                    language_distribution = [{'language': 'Python', 'count': total_executions}]
+            except Exception as field_error:
+                logger.warning(f"Error accessing language field: {str(field_error)}")
+                # Default to Python as fallback
                 language_distribution = [{'language': 'Python', 'count': total_executions}]
 
             # Prepare response data

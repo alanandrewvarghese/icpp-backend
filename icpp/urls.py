@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/progress/', include('apps.progress.urls')),
     path('api/badges/', include('apps.badges.urls')),
     path('api/analytics/', include('apps.analytics.urls')),
+    path('api/support/', include('apps.support.urls')),
 ]

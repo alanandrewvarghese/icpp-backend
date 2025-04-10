@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/badges/', include('apps.badges.urls')),
     path('api/analytics/', include('apps.analytics.urls')),
     path('api/support/', include('apps.support.urls')),
+    path('api/quiz/', include('apps.quiz.urls')),
 ]

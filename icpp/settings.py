@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'apps.badges',
     'apps.analytics',
     'apps.support',
+    'apps.quiz',
 ]
 
 # Email Settings

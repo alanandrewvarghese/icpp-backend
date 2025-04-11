@@ -110,7 +110,7 @@ WSGI_APPLICATION = 'icpp.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "icpp-zero",
+        "NAME": "icpp-two",
         "USER": "postgres",
         "PASSWORD": "root",
         "HOST": "127.0.0.1",
@@ -258,6 +258,11 @@ LOGGING = {
             "propagate": False,
         },
         "support": {
+            "handlers": ["applogs", "console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "quiz": {
             "handlers": ["applogs", "console"],
             "level": "DEBUG",
             "propagate": False,

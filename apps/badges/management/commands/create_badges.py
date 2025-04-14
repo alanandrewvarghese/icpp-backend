@@ -6,11 +6,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         badge_definitions = [
-            {"name": "Lesson Starter", "description": "Awarded for completing your first lesson", "icon": "starter.png"},
-            {"name": "Lesson Master", "description": "Awarded for completing 5 lessons", "icon": "lesson_master.png"},
-            {"name": "First Exercise", "description": "Awarded for correctly completing your first exercise", "icon": "first_exercise.png"},
-            {"name": "Exercise Enthusiast", "description": "Awarded for correctly completing 5 exercises", "icon": "enthusiast.png"},
-            {"name": "Exercise Master", "description": "Awarded for correctly completing 25 exercises", "icon": "exercise_master.png"},
+          {"name": "Lesson Starter", "description": "Your journey begins!", "icon": "starter.png"},
+          {"name": "Lesson Master", "description": "Lesson pro in the making", "icon": "lesson_master.png"},
+          {"name": "First Exercise", "description": "First step into coding", "icon": "first_exercise.png"},
+          {"name": "Exercise Enthusiast", "description": "Loving the practice grind", "icon": "enthusiast.png"},
+          {"name": "Exercise Master", "description": "Master of consistency", "icon": "exercise_master.png"},
         ]
 
         created_count = 0

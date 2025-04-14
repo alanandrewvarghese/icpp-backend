@@ -42,26 +42,35 @@ class LessonAnalyticsAPIView(APIView):
         try:
             # Get basic counts
             total_lessons = Lesson.objects.count()
-            # Fixed: Using role instead of groups
             total_students = User.objects.filter(role='student').count()
-            total_completions = LessonProgress.objects.count()
 
-            # Calculate overall completion percentage
+            # Calculate unique lesson completions (one per student per lesson)
+            unique_completions = LessonProgress.objects.values('lesson', 'user').distinct().count()
+
+            # Calculate overall completion percentage based on unique completions
             overall_completion_percentage = 0
             if total_lessons > 0 and total_students > 0:
                 possible_completions = total_lessons * total_students
-                overall_completion_percentage = (total_completions / possible_completions) * 100 if possible_completions > 0 else 0
+                overall_completion_percentage = (unique_completions / possible_completions) * 100 if possible_completions > 0 else 0
 
             # Get lesson completion data
             lesson_stats = []
             for lesson in Lesson.objects.all():
-                completion_count = LessonProgress.objects.filter(lesson=lesson).count()
+                # Count distinct students who completed this lesson
+                completion_count = LessonProgress.objects.filter(lesson=lesson).values('user').distinct().count()
+
+                # Prevent completion rate from exceeding 100%
+                if completion_count > total_students:
+                    logger.warning(f"Data anomaly: Lesson '{lesson.title}' (ID: {lesson.id}) has more completions ({completion_count}) than students ({total_students})")
+                    completion_count = min(completion_count, total_students)
+
                 completion_rate = (completion_count / total_students) * 100 if total_students > 0 else 0
                 lesson_stats.append({
                     'id': lesson.id,
                     'title': lesson.title,
                     'completion_count': completion_count,
-                    'completion_rate': round(completion_rate, 2)
+                    'completion_rate': round(completion_rate, 2),
+                    'student_count': total_students
                 })
 
             # Sort lessons by completion rate
@@ -84,7 +93,7 @@ class LessonAnalyticsAPIView(APIView):
                 'overall_stats': {
                     'total_lessons': total_lessons,
                     'total_students': total_students,
-                    'total_completions': total_completions,
+                    'total_completions': unique_completions,
                     'overall_completion_percentage': round(overall_completion_percentage, 2)
                 },
                 'top_completed_lessons': top_completed_lessons,
